@@ -1,1 +1,1 @@
-Voulez-vous activer le pouvoir (0/1) ?
+positions disponibles : {8, 4, 6, 7}, choisir la valeur

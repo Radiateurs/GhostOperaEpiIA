@@ -5,28 +5,28 @@ from helper import World, Question
 # inspecteur
 
 def choose_tile(tiles_name_list):
-    return 0
+    return randrange(len(tiles_name_list) - 1)
 
 def choose_activate_power():
     return False
 
 def choose_dest_case(case_id_list):
-    return 0
+    return randrange(len(case_id_list) - 1)
 
 def choose_purple_power_target():
     return "rose"
 
 def choose_grey_power_target():
-    return 0
+    return randrange(len(7))
 
 def choose_blue_power_case_target():
-    return 0
+    return randrange(len(9))
 
 def choose_blue_power_door_target(door_id_list):
-    return 0
+    return randrange(len(door_id_list) - 1)
 
 def choose_white_power_target(case_id_list):
-    return 0
+    return randrange(len(case_id_list) - 1)
 
 
 def switch(q: Question):
@@ -60,9 +60,8 @@ def lancer():
         if question != old_question and question:
             q = world.parse_question(question)
             answer = switch(q)
-            #print(str(answer))
             rf = open('./0/reponses.txt','w')
-            rf.write(str(randrange(2)))
+            rf.write(str(answer))
             rf.close()
             old_question = question
         infof = open('./0/infos.txt','r')
