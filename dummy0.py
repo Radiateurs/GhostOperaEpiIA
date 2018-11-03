@@ -2,31 +2,37 @@ from random import randrange
 
 from helper import World, Question
 
+colors = ['rose', 'rouge','gris','bleu', 'violet','marron', 'noir','blanc']
+
 # inspecteur
 
 def choose_tile(tiles_name_list):
-    return randrange(len(tiles_name_list) - 1)
+    return randrange(len(tiles_name_list))
 
 def choose_activate_power():
-    return False
+    i = randrange(1)
+    if (i == 0):
+        return False
+    else:
+        return True
 
 def choose_dest_case(case_id_list):
-    return randrange(len(case_id_list) - 1)
+    return randrange(len(case_id_list))
 
 def choose_purple_power_target():
-    return "rose"
+    return colors[randrange(8)]
 
 def choose_grey_power_target():
-    return randrange(len(7))
+    return randrange(len(8))
 
 def choose_blue_power_case_target():
-    return randrange(len(9))
+    return randrange(len(10))
 
 def choose_blue_power_door_target(door_id_list):
-    return randrange(len(door_id_list) - 1)
+    return randrange(len(door_id_list))
 
 def choose_white_power_target(case_id_list):
-    return randrange(len(case_id_list) - 1)
+    return randrange(len(case_id_list))
 
 
 def switch(q: Question):
