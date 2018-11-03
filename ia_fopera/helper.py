@@ -357,6 +357,7 @@ class Question(list):
         self._line = line
         self._type = type
         list.__init__(self, *args)
+        self._args = list(*args)
 
     def __getitem__(self, key):
         return list.__getitem__(self, key)
@@ -379,3 +380,7 @@ class Question(list):
     @property
     def type(self):
         return self._type
+
+    @property
+    def args(self):
+        return self._args
