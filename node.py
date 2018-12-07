@@ -3,14 +3,6 @@ import board
 
 class Node:
 
-#TODO !!!!!!
-#For now the constructor always puts the lock between 1 and 0
-#The constructor should place the lock in the proper room
-
-#TODO !!!!!!
-#For now the constructor always puts the lightOff in room 0
-#The constructor should place the lightOff in the proper room
-
     def __init__(self):
         self._child = []
         self.characters = [character.Character(character.Color.RED, 0),
