@@ -33,6 +33,11 @@ class Node:
     def moveCharacter(self, to_move, new_position):
         global path
         global path_pink
+
+        if new_position < 0 or new_position > 9 or\
+                (self.characters[to_move.value].position == self.lock[0] and new_position == self.lock[1]) or\
+                (self.characters[to_move.value].position == self.lock[1] and new_position == self.lock[0]):
+            return False
         if to_move == character.Color.PINK:
             if new_position in board.path_pink[self.characters[to_move.value].position]:
                 self.characters[to_move.value].position = new_position
@@ -54,11 +59,50 @@ class Node:
         print("Lights are off in room : "+str(self.lightOff))
         print("Lock : "+str(self.lock)+"\n")
 
-# Returns a score for the current Node.
-# Lower is good for gohst, higher is good for inspector
-    def computeScoreGohst(self, ghost):
-        print("ghost")
+# HIGHER SCORE is better (goes from -4 to 9)
+# Returns -1000 if the ghost loose the game
+    def computeScoreGhost(self, ghost_color):
+        ghost = self.characters[ghost_color.value]
+        seen = 0
+        unseen = 0
+        ghostSeen = False
+        if self.lightOff != ghost.position and self.nbPeopleInRoom(ghost.position) > 1:
+            ghostSeen = True
+        for character in self.characters:
+            if character.suspect:
+                if character.position == self.lightOff:
+                    unseen += 1
+                elif self.nbPeopleInRoom(character.position) > 1:
+                    seen += 1
+                else:
+                    unseen += 1
+        if (ghostSeen and seen == 1) or (not ghostSeen and unseen == 1):
+            return -1000
+        if ghostSeen:
+            return seen - unseen
+        return unseen - seen + 1
 
+# LOWER SCORE is better (goes from 0 to 8)
     def computeScoreInspector(self):
-        print("inspector")
+        seen = 0
+        unseen = 0
+        for character in self.characters:
+            if character.suspect:
+                if character.position == self.lightOff:
+                    unseen += 1
+                elif self.nbPeopleInRoom(character.position) > 1:
+                    seen += 1
+                else:
+                    unseen += 1
+        return abs(seen - unseen)
 
+    def nbPeopleInRoom(self, pos):
+        nbPeople = 0
+        for character in self.characters:
+            if character.position == pos:
+                nbPeople += 1
+        return nbPeople
+
+# For test purposes. Please use moveCharacter.
+    def setPosition(self, to_move, new_position):
+        self.characters[to_move.value].position = new_position

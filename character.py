@@ -4,10 +4,10 @@ class Character:
     def __init__(self, _color, _position):
         self.color = _color
         self.position = _position
-        self.cleared = False
+        self.suspect = True
 
     def dump(self):
-        print("  "+str(self.color)+", position: "+str(self.position)+", cleared: "+str(self.cleared))
+        print("  "+str(self.color)+", position: "+str(self.position)+", suspect: "+str(self.suspect))
 
 class Color(Enum):
     RED = 0
