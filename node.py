@@ -4,7 +4,8 @@ import board
 class Node:
 
     def __init__(self):
-        self._child = []
+        self.parent = None
+        self.child = []
         self.characters = [character.Character(character.Color.RED, 0),
                            character.Character(character.Color.PINK, 0),
                            character.Character(character.Color.GREY, 0),
@@ -107,3 +108,21 @@ class Node:
 # Set the light
     def set_lock(self, lock):
         self.lock = lock
+
+    def get_light_off(self):
+        return self.lightOff
+
+    def get_lock(self):
+        return self.lock
+
+    def set_parent(self, parent):
+        self.parent = parent
+
+    def get_parent(self):
+        return self.parent
+
+    def add_children(self, child):
+        self.child.append(child)
+
+    def get_characters(self):
+        return self.characters
