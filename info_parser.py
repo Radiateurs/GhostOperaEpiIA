@@ -49,9 +49,12 @@ class ParseInfo():
     _state: State = State.unknown
     _stat_history = []
     _characters = []
+    _light = None
+    _lock = []
 
     def __init__(self, jid: int):
         self._jid = jid
+        self._lock = [None, None]
         self._characters = [character.Character(character.Color.RED, 0),
                            character.Character(character.Color.PINK, 0),
                            character.Character(character.Color.GREY, 0),
@@ -75,6 +78,7 @@ class ParseInfo():
     def get_line(self):
         return self._line
 
+# return True if there's more to read
     def has_next_line(self):
         return True if self._stack is not None and self._stack.splitlines() is not None and\
                        len(self._stack.splitlines()) > 0 else False
@@ -99,7 +103,7 @@ class ParseInfo():
         self._state = State.unknown
         if self._line == None:
             return
-        tokens = [r'[*]+', r'Tour.', r'^([a-z]+-[0-9]-(suspect|clean)(  |)){8}',
+        tokens = [r'[*]+', r'Tour:.', r'^([a-z]+-[0-9]-(suspect|clean)(  |)){8}',
                   r'QUESTION :.', r'REPONSE DONNEE.', r'REPONSE INTERPRETEE.',
                   r'l(e fantome|\'inspecteur) joue', r'Pouvoir de [a-z]+ activé',
                   r'(le fantome frappe|pas de cri)', r'NOUVEAU PLACEMENT : [a-z]+-[0-9]-(suspect|clean)',
@@ -108,14 +112,15 @@ class ParseInfo():
         for token in range(len(tokens)):
             if re.search(tokens[token], self._line):
                 self._state = State(token + 1)
-                return
+                break
+        if self._state is State.character_pos:
+            self.init_characters()
+        if self._state is State.world_info:
+            self.init_world_info()
 
-    def get_line_state(self):
-        return self._state
-
-    def get_characters(self):
+    def init_characters(self):
         if self._line == None:
-            return None
+            return
         # Create a list of {gris-2-suspect} from the line
         raw_characters = self._line.split("  ")
         for raw in range(len(raw_characters)):
@@ -129,4 +134,22 @@ class ParseInfo():
             is_char_suspect = "suspect" in raw_states[2]
             self._characters[char_index].position = char_room
             self._characters[char_index].suspect = is_char_suspect
+
+    def init_world_info(self):
+        if self._line == None or "Ombre:" not in self._line or "Bloque:" not in self._line:
+            return
+        self._light = int(self._line[self._line.find("Ombre:") + 6:self._line.find("Ombre:") + 7])
+        self._lock[0] = int(self._line[self._line.find("Bloque:") + 8:self._line.find("Bloque:") + 9])
+        self._lock[1] = int(self._line[self._line.find("Bloque:") + 11:self._line.find("Bloque:") + 12])
+
+    def get_line_state(self):
+        return self._state
+
+    def get_light(self):
+        return self._light
+
+    def get_lock(self):
+        return self._lock
+
+    def get_characters(self):
         return self._characters

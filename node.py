@@ -12,6 +12,7 @@ class Node:
 #The constructor should place the lightOff in the proper room
 
     def __init__(self):
+        self._child = []
         self.characters = [character.Character(character.Color.RED, 0),
                            character.Character(character.Color.PINK, 0),
                            character.Character(character.Color.GREY, 0),
@@ -106,3 +107,11 @@ class Node:
 # Set the character list to a given one
     def set_character(self, characters):
         self.characters = characters
+
+# Set the light
+    def set_light_off(self, light):
+        self.lightOff = light
+
+# Set the light
+    def set_lock(self, lock):
+        self.lock = lock
