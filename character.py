@@ -1,5 +1,7 @@
 from enum import Enum
 
+characters_string = ["rouge", "rose", "gris", "bleu", "violet", "marron", "noir", "blanc"]
+
 class Character:
     def __init__(self, _color, _position):
         self.color = _color
@@ -8,6 +10,9 @@ class Character:
 
     def dump(self):
         print("  "+str(self.color)+", position: "+str(self.position)+", suspect: "+str(self.suspect))
+
+    def get_character_color_to_string(self):
+        return characters_string[self.color]
 
 class Color(Enum):
     RED = 0

@@ -1,7 +1,7 @@
 from random import randrange
-<<<<<<< HEAD
 from helper import World
 import info_parser
+import node
 
 def lancer():
     world = World(jid=1)
@@ -20,26 +20,14 @@ def lancer():
             while parser.has_next_line():
                 print("State : ")
                 print(parser.get_line_state())
+                if parser.get_line_state() is info_parser.State.character_pos:
+                    my_node = node.Node()
+                    my_node.set_character(parser.get_characters())
+                    my_node.dump()
                 parser.read_next()
             print("State : ")
             print(parser.get_line_state())
-=======
-
-def lancer():
-    fini = False
-    old_question = ""
-    while not fini:
-        qf = open('./1/questions.txt','r')
-        question = qf.read()
-        qf.close()
-        if question != old_question :
-            rf = open('./1/reponses.txt','w')
-            rf.write(str(randrange(6)))
-            rf.close()
-            old_question = question
-        infof = open('./1/infos.txt','r')
-        lines = infof.readlines()
-        infof.close()
-        if len(lines) > 0:
-            fini = "Score final" in lines[-1]
->>>>>>> 50aa00f563116bb6665732340db8bf28e03304c8
+            if parser.get_line_state() is info_parser.State.character_pos:
+                my_node = node.Node()
+                my_node.set_character(parser.get_characters())
+                my_node.dump()

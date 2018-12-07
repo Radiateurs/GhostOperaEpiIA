@@ -1,4 +1,5 @@
 import re
+import character
 from enum import Enum
 
 
@@ -47,9 +48,18 @@ class ParseInfo():
     _line = None
     _state: State = State.unknown
     _stat_history = []
+    _characters = []
 
     def __init__(self, jid: int):
         self._jid = jid
+        self._characters = [character.Character(character.Color.RED, 0),
+                           character.Character(character.Color.PINK, 0),
+                           character.Character(character.Color.GREY, 0),
+                           character.Character(character.Color.BLUE, 0),
+                           character.Character(character.Color.PURPLE, 0),
+                           character.Character(character.Color.BROWN, 0),
+                           character.Character(character.Color.BLACK, 0),
+                           character.Character(character.Color.WHITE, 0)]
 
     def read_file(self):
         path = './{jid}/{file}'.format(jid=self._jid, file=self.file_info)
@@ -102,3 +112,21 @@ class ParseInfo():
 
     def get_line_state(self):
         return self._state
+
+    def get_characters(self):
+        if self._line == None:
+            return None
+        # Create a list of {gris-2-suspect} from the line
+        raw_characters = self._line.split("  ")
+        for raw in range(len(raw_characters)):
+            # Separate each object in the given strings to create a list of [{color}, {pos}, {state}]
+            raw_states = raw_characters[raw].split("-")
+            # Get the index by looking in the characters_string list.
+            char_index = character.characters_string.index(raw_states[0])
+            # Get the character room number
+            char_room = int(raw_states[1])
+            # set is_char_suspect to False if "suspect" is not contained in the given string or True if it is.
+            is_char_suspect = "suspect" in raw_states[2]
+            self._characters[char_index].position = char_room
+            self._characters[char_index].suspect = is_char_suspect
+        return self._characters

@@ -4,10 +4,6 @@ import board
 class Node:
 
 #TODO !!!!!!
-#For now the constructor always puts the characters in room 0
-#The constructor should place the characters in their proper room
-
-#TODO !!!!!!
 #For now the constructor always puts the lock between 1 and 0
 #The constructor should place the lock in the proper room
 
@@ -57,7 +53,7 @@ class Node:
         for character in self.characters:
             character.dump()
         print("Lights are off in room : "+str(self.lightOff))
-        print("Lock : "+str(self.lock)+"\n")
+        print("Lock : "+ str(self.lock)+"\n")
 
 # HIGHER SCORE is better (goes from -4 to 9)
 # Returns -1000 if the ghost loose the game
@@ -106,3 +102,7 @@ class Node:
 # For test purposes. Please use moveCharacter.
     def setPosition(self, to_move, new_position):
         self.characters[to_move.value].position = new_position
+
+# Set the character list to a given one
+    def set_character(self, characters):
+        self.characters = characters
