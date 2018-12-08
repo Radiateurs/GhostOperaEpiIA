@@ -36,12 +36,13 @@ def lancer():
     my_tree = Tree()
     parser = info_parser.ParseInfo(jid=1)
     computeLine(parser, my_tree)
-    my_tree.generate_direct_child()
+    my_tree.generate()
+    print("Root:")
+    my_tree.root.dump()
     for i in range(len(my_tree.get_childs())):
         print("Node n:" + str(i))
         my_tree.root.child[i].dump()
     while world.is_end() is False:
-
         question = world.pull_question(file=world.file_question)
         if question != old_question:
             print(question)

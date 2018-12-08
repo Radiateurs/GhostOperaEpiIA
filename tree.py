@@ -18,21 +18,8 @@ class Tree:
         if self._actual is not self.root:
             self._actual = self._actual.parent
 
-    def generate_direct_child(self):
-        for char in character.Color:
-            if char == character.Color.NONE:
-                continue
-            rooms = self._board.getLinkForRoom(self._actual.characters[char.value].position)
-            for room in rooms:
-                if room == self._actual.characters[char.value].position:
-                    continue
-                tmp = node.Node()
-                tmp.parent = self._actual
-                tmp.characters = self._actual.characters
-                tmp.lightOff = self._actual.lightOff
-                tmp.lock = self._actual.lock
-                tmp.setPosition(char, room)
-                self._actual.child.append(tmp)
+    def generate(self):
+        self._actual.generate_direct_child()
 
     def get_childs(self):
         return self._actual.child

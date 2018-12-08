@@ -16,6 +16,7 @@ class Node:
                            character.Character(character.Color.WHITE, 0)]
         self.lock = [0, 1]
         self.lightOff = 0
+        self.board = board.Board()
 
 # Try to move a character to a new position.
 # Returns true on success.
@@ -93,6 +94,23 @@ class Node:
                 nbPeople += 1
         return nbPeople
 
+    def generate_direct_child(self):
+        for char in character.Color:
+            if char == character.Color.NONE:
+                continue
+            rooms = self.board.getLinkForRoom(self.characters[char.value].position)
+            for room in rooms:
+                print("Generating character " + character.characters_string[char.value] + " for room " + str(room))
+                tmp = Node()
+                tmp.parent = self
+                for i in range(len(self.characters)):
+                    tmp.characters[i] = character.Character(self.characters[i].color, self.characters[i].position)
+                    tmp.characters[i].suspect = self.characters[i].suspect
+                tmp.lightOff = self.lightOff
+                tmp.lock = self.lock
+                tmp.setPosition(char, room)
+                self.child.append(tmp)
+
 # For test purposes. Please use moveCharacter.
     def setPosition(self, to_move, new_position):
         self.characters[to_move.value].position = new_position
@@ -108,6 +126,7 @@ class Node:
 # Set the light
     def set_lock(self, lock):
         self.lock = lock
+        self.board.lockPath(self.lock[0], self.lock[1])
 
     def get_light_off(self):
         return self.lightOff
