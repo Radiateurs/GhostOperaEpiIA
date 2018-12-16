@@ -1,9 +1,57 @@
+from enum import Enum
 import character
 import board
+
+
+class PlayLevelId(Enum):
+    ghost1 = 0
+    inspector1 = 1
+    inspector2 = 2
+    ghost2 = 3
+    inspector3 = 4
+    ghost3 = 5
+    ghost4 = 6
+    inspector4 = 7
+
+
+class PlayLevel:
+
+    @staticmethod
+    def getNextMove(level: PlayLevelId):
+        if level == PlayLevelId.inspector4:
+            return PlayLevelId.ghost1
+        next = [ PlayLevelId.ghost1,
+                 PlayLevelId.inspector1,
+                 PlayLevelId.inspector2,
+                 PlayLevelId.ghost2,
+                 PlayLevelId.inspector3,
+                 PlayLevelId.ghost3,
+                 PlayLevelId.ghost4,
+                 PlayLevelId.inspector4 ]
+        for n in range(len(next)):
+            if next[n] == level:
+                return next[n + 1]
+
+    @staticmethod
+    def isGhostTurn(level):
+        if level == PlayLevelId.ghost1 or level == PlayLevelId.ghost2 or \
+                level == PlayLevelId.ghost3 or level == PlayLevelId.ghost4:
+            return True
+        return False
+
+    @staticmethod
+    def isInspectorTurn(level):
+        if level == PlayLevelId.inspector1 or level == PlayLevelId.inspector2 or \
+                level == PlayLevelId.inspector3 or level == PlayLevelId.inspector4:
+            return True
+        return False
+
 
 class Node:
 
     def __init__(self):
+        self.playLevel = None
+        self.ghostColor = character.Color.NONE
         self.parent = None
         self.child = []
         self.characters = [character.Character(character.Color.RED, 0),
@@ -17,6 +65,7 @@ class Node:
         self.lock = [0, 1]
         self.lightOff = 0
         self.board = board.Board()
+        self.heuristic = None
 
 # Try to move a character to a new position.
 # Returns true on success.
@@ -48,7 +97,15 @@ class Node:
         for character in self.characters:
             character.dump()
         print("Lights are off in room : "+str(self.lightOff))
-        print("Lock : "+ str(self.lock)+"\n")
+        print("Lock : " + str(self.lock))
+        print("Playing for : ")
+        if PlayLevel.isGhostTurn(self.playLevel):
+            print("Ghost\n")
+        else:
+            if PlayLevel.isInspectorTurn(self.playLevel):
+                print("Inspector\n")
+            else:
+                print("Unknown")
 
 # HIGHER SCORE is better (goes from -4 to 9)
 # Returns -1000 if the ghost loose the game
@@ -94,13 +151,12 @@ class Node:
                 nbPeople += 1
         return nbPeople
 
-    def generate_direct_child(self):
+    def generate_direct_child(self, depth=0, max_depth=2):
         for char in character.Color:
             if char == character.Color.NONE:
                 continue
             rooms = self.board.getLinkForRoom(self.characters[char.value].position)
             for room in rooms:
-                print("Generating character " + character.characters_string[char.value] + " for room " + str(room))
                 tmp = Node()
                 tmp.parent = self
                 for i in range(len(self.characters)):
@@ -109,6 +165,17 @@ class Node:
                 tmp.lightOff = self.lightOff
                 tmp.lock = self.lock
                 tmp.setPosition(char, room)
+                tmp.playLevel = PlayLevel.getNextMove(self.playLevel)
+                tmp.ghostColor = self.ghostColor
+                if self.ghostColor is not character.Color.NONE:
+                    tmp.heuristic = tmp.computeScoreGhost(tmp.ghostColor)
+                else:
+                    tmp.heuristic = tmp.computeScoreInspector()
+                print("Generating character " + character.characters_string[char.value] + " for room " + str(room) +
+                      " with a depth of " + str(depth) + " for turn " + str(self.playLevel) + " with heuristic of "
+                      + str(tmp.heuristic))
+                if depth < max_depth:
+                    tmp.generate_direct_child(depth=depth+1)
                 self.child.append(tmp)
 
 # For test purposes. Please use moveCharacter.
@@ -123,25 +190,31 @@ class Node:
     def set_light_off(self, light):
         self.lightOff = light
 
-# Set the light
+# Set the lock
     def set_lock(self, lock):
         self.lock = lock
         self.board.lockPath(self.lock[0], self.lock[1])
 
+# Get the light
     def get_light_off(self):
         return self.lightOff
 
+# Get the lock
     def get_lock(self):
         return self.lock
 
+# Set the parent
     def set_parent(self, parent):
         self.parent = parent
 
+# Get the parent
     def get_parent(self):
         return self.parent
 
+# Add a children
     def add_children(self, child):
         self.child.append(child)
 
+# Get the characters
     def get_characters(self):
         return self.characters

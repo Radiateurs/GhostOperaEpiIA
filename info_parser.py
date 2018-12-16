@@ -51,6 +51,7 @@ class ParseInfo():
     _characters = []
     _light = None
     _lock = []
+    _ghostColor = character.Color.NONE
 
     def __init__(self, jid: int):
         self._jid = jid
@@ -107,7 +108,7 @@ class ParseInfo():
                   r'QUESTION :.', r'REPONSE DONNEE.', r'REPONSE INTERPRETEE.',
                   r'l(e fantome|\'inspecteur) joue', r'Pouvoir de [a-z]+ activé',
                   r'(le fantome frappe|pas de cri)', r'NOUVEAU PLACEMENT : [a-z]+-[0-9]-(suspect|clean)',
-                  r'^  Tour de l\'inspecteur', r'  Tour de le fantome', r'[!]{3}.']
+                  r'^  Tour de l\'inspecteur', r'  Tour de le fantome', r'[!]{3}.', r'!!! Le fantôme est : *']
         print("LINE : " + self._line + "$$$")
         for token in range(len(tokens)):
             if re.search(tokens[token], self._line):
@@ -117,6 +118,8 @@ class ParseInfo():
             self.init_characters()
         if self._state is State.world_info:
             self.init_world_info()
+        if self._state is State.ghost_character:
+            self.parseGhostColor()
 
     def init_characters(self):
         if self._line == None:
@@ -142,6 +145,12 @@ class ParseInfo():
         self._lock[0] = int(self._line[self._line.find("Bloque:") + 8:self._line.find("Bloque:") + 9])
         self._lock[1] = int(self._line[self._line.find("Bloque:") + 11:self._line.find("Bloque:") + 12])
 
+    def parseGhostColor(self):
+        for color in range(len(character.characters_string)):
+            if character.characters_string[color] in self._line:
+                self._ghostColor = character.Color(color)
+                break
+
     def get_line_state(self):
         return self._state
 
@@ -153,3 +162,6 @@ class ParseInfo():
 
     def get_characters(self):
         return self._characters
+
+    def get_ghost_color(self):
+        return self._ghostColor

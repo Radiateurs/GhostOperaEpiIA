@@ -27,6 +27,8 @@ def computeLine(parser, tree):
     if parser.get_line_state() is info_parser.State.character_pos:
         tree.root.characters = parser.get_characters()
         tree.root.dump()
+    if parser.get_line_state() is info_parser.State.ghost_character:
+        tree.root.ghostColor = parser.get_ghost_color()
     return tree
 
 
@@ -34,6 +36,7 @@ def lancer():
     world = World(jid=1)
     old_question = None
     my_tree = Tree()
+    my_tree.root.playLevel = node.PlayLevelId.ghost1
     parser = info_parser.ParseInfo(jid=1)
     computeLine(parser, my_tree)
     my_tree.generate()
