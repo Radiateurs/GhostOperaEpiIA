@@ -221,7 +221,7 @@ class Node:
                         tmp.lock = lock_room
                         tmp = self.set_tmp_node_heuristique(tmp)
                         if depth < max_depth:
-                            tmp.generate_direct_child(depth=depth+1)
+                            tmp.generate_direct_child_power(depth=depth+1)
                         self.child.append(tmp)
                 elif char == character.Color.GREY:
                     for light_room in range(0, 10):
@@ -230,7 +230,7 @@ class Node:
                         tmp.lightOff = light_room
                         tmp = self.set_tmp_node_heuristique(tmp)
                         if depth < max_depth:
-                            tmp.generate_direct_child(depth=depth+1)
+                            tmp.generate_direct_child_power(depth=depth+1)
                         self.child.append(tmp)
                 elif char == character.Color.PURPLE:
                     # choose not use the power
@@ -238,7 +238,7 @@ class Node:
                     tmp.setPosition(char, room)
                     tmp = self.set_tmp_node_heuristique(tmp)
                     if depth < max_depth:
-                        tmp.generate_direct_child(depth=depth+1)
+                        tmp.generate_direct_child_power(depth=depth+1)
                     self.child.append(tmp)
                     # choose to use the power
                     for swap_char in character.Color:
@@ -250,14 +250,14 @@ class Node:
                         tmp.setPosition(swap_char, old_purple_position)
                         tmp_power = self.set_tmp_node_heuristique(tmp_power)
                         if depth < max_depth:
-                            tmp_power.generate_direct_child(depth=depth+1)
+                            tmp_power.generate_direct_child_power(depth=depth+1)
                         self.child.append(tmp_power)
                 else: # if the power is not handled (or handled elsewhere like for example the pink)
                     tmp = self.create_child_node()
                     tmp.setPosition(char, room)
                     tmp = self.set_tmp_node_heuristique(tmp)
                     if depth < max_depth:
-                        tmp.generate_direct_child(depth=depth+1)
+                        tmp.generate_direct_child_power(depth=depth+1)
                     self.child.append(tmp)
 
 # For test purposes. Please use moveCharacter.
