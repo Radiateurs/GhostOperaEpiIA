@@ -245,9 +245,28 @@ class Node:
                         if char == character.Color.PURPLE:
                             continue
                         tmp_power = self.create_child_node()
-                        old_purple_position = self.characters[char].position
-                        tmp.setPosition(char, self.characters[swap_char].position)
+                        old_purple_position = self.characters[char.value].position
+                        tmp.setPosition(char, self.characters[swap_char.value].position)
                         tmp.setPosition(swap_char, old_purple_position)
+                        tmp_power = self.set_tmp_node_heuristique(tmp_power)
+                        if depth < max_depth:
+                            tmp_power.generate_direct_child_power(depth=depth+1)
+                        self.child.append(tmp_power)
+                elif char == character.Color.BROWN:
+                    # choose not use the power
+                    tmp = self.create_child_node()
+                    tmp.setPosition(char, room)
+                    tmp = self.set_tmp_node_heuristique(tmp)
+                    if depth < max_depth:
+                        tmp.generate_direct_child_power(depth=depth+1)
+                    self.child.append(tmp)
+                    # choose to use the power
+                    for swap_char in character.Color:
+                        if char == character.Color.BROWN or self.characters[swap_char.value].position != self.characters[char.value].position:
+                            continue
+                        tmp_power = self.create_child_node()
+                        tmp.setPosition(char, room)
+                        tmp.setPosition(swap_char, room)
                         tmp_power = self.set_tmp_node_heuristique(tmp_power)
                         if depth < max_depth:
                             tmp_power.generate_direct_child_power(depth=depth+1)
