@@ -185,6 +185,81 @@ class Node:
                     tmp.generate_direct_child(depth=depth+1)
                 self.child.append(tmp)
 
+    def create_child_node(self):
+        tmp = Node()
+        tmp.parent = self
+        for i in range(len(self.characters)):
+            tmp.characters[i] = character.Character(self.characters[i].color, self.characters[i].position)
+            tmp.characters[i].suspect = self.characters[i].suspect
+        tmp.playedCharacter = char.value
+        tmp.lightOff = self.lightOff
+        tmp.lock = self.lock
+        tmp.playLevel = PlayLevel.getNextMove(self.playLevel)
+        tmp.ghostColor = self.ghostColor
+        return tmp
+
+    def set_tmp_node_heuristique(self, tmp):
+        if self.ghostColor is not character.Color.NONE:
+            tmp.heuristic = tmp.computeScoreGhost(tmp.ghostColor)
+        else:
+            tmp.heuristic = tmp.computeScoreInspector()
+        return tmp
+
+    def generate_direct_child_power(self, depth=0, max_depth=2):
+        for char in character.Color:
+            if char == character.Color.NONE:
+                continue
+            if char == character.Color.PINK:
+                rooms = self.board.getLinkForRoom(self.characters[char.value].position, True)
+            else:
+                rooms = self.board.getLinkForRoom(self.characters[char.value].position)
+            for room in rooms:
+                if char == character.Color.BLUE:
+                    for lock_room in range(0, 10):
+                        tmp = self.create_child_node()
+                        tmp.setPosition(char, room)
+                        tmp.lock = lock_room
+                        tmp = self.set_tmp_node_heuristique(tmp)
+                        if depth < max_depth:
+                            tmp.generate_direct_child(depth=depth+1)
+                        self.child.append(tmp)
+                elif char == character.Color.GREY:
+                    for light_room in range(0, 10):
+                        tmp = self.create_child_node()
+                        tmp.setPosition(char, room)
+                        tmp.lightOff = light_room
+                        tmp = self.set_tmp_node_heuristique(tmp)
+                        if depth < max_depth:
+                            tmp.generate_direct_child(depth=depth+1)
+                        self.child.append(tmp)
+                elif char == character.Color.PURPLE:
+                    # choose not use the power
+                    tmp = self.create_child_node()
+                    tmp.setPosition(char, room)
+                    tmp = self.set_tmp_node_heuristique(tmp)
+                    if depth < max_depth:
+                        tmp.generate_direct_child(depth=depth+1)
+                    self.child.append(tmp)
+                    # choose to use the power
+                    for swap_char in character.Color:
+                        if char == character.Color.PURPLE:
+                            continue
+                        tmp_power = self.create_child_node()
+                        old_purple_position = self.characters[char].position
+                        tmp.setPosition(char, self.characters[swap_char].position)
+                        tmp.setPosition(swap_char, old_purple_position)
+                        tmp_power = self.set_tmp_node_heuristique(tmp_power)
+                        if depth < max_depth:
+                            tmp_power.generate_direct_child(depth=depth+1)
+                        self.child.append(tmp_power)
+                else: # if the power is not handled (or handled elsewhere like for example the pink)
+                    tmp = self.create_child_node()
+                    tmp.setPosition(char, room)
+                    tmp = self.set_tmp_node_heuristique(tmp)
+                    if depth < max_depth:
+                        tmp.generate_direct_child(depth=depth+1)
+                    self.child.append(tmp)
+
 # For test purposes. Please use moveCharacter.
     def setPosition(self, to_move, new_position):
         self.characters[to_move.value].position = new_position
