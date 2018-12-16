@@ -46,12 +46,18 @@ class PlayLevel:
             return True
         return False
 
+    @staticmethod
+    def isAdverseMove(jid, level):
+        return True if (jid == 0 and PlayLevel.isGhostTurn(level)) or (jid == 1 and PlayLevel.isInspectorTurn(level)) \
+            else False
+
 
 class Node:
 
     def __init__(self):
         self.playLevel = None
         self.ghostColor = character.Color.NONE
+        self.playedCharacter = None
         self.parent = None
         self.child = []
         self.characters = [character.Character(character.Color.RED, 0),
@@ -162,6 +168,7 @@ class Node:
                 for i in range(len(self.characters)):
                     tmp.characters[i] = character.Character(self.characters[i].color, self.characters[i].position)
                     tmp.characters[i].suspect = self.characters[i].suspect
+                tmp.playedCharacter = char.value
                 tmp.lightOff = self.lightOff
                 tmp.lock = self.lock
                 tmp.setPosition(char, room)
@@ -171,9 +178,9 @@ class Node:
                     tmp.heuristic = tmp.computeScoreGhost(tmp.ghostColor)
                 else:
                     tmp.heuristic = tmp.computeScoreInspector()
-                print("Generating character " + character.characters_string[char.value] + " for room " + str(room) +
-                      " with a depth of " + str(depth) + " for turn " + str(self.playLevel) + " with heuristic of "
-                      + str(tmp.heuristic))
+#                print("Generating character " + character.characters_string[char.value] + " for room " + str(room) +
+#                      " with a depth of " + str(depth) + " for turn " + str(self.playLevel) + " with heuristic of "
+#                      + str(tmp.heuristic))
                 if depth < max_depth:
                     tmp.generate_direct_child(depth=depth+1)
                 self.child.append(tmp)
