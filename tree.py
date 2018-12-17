@@ -24,9 +24,7 @@ class Tree:
             self._actual = self._actual.parent
 
     def generate(self):
-        print("generating")
-        self._actual.generate_direct_child(depth=0, max_depth=0)
-        print("done generating")
+        self._actual.generate_direct_child_power(depth=0, max_depth=0)
 
 # generate child other childs
     def generate_deeper(self):
@@ -34,7 +32,7 @@ class Tree:
             self.generate()
         else:
             for child in self._actual.child:
-                child.generate_direct_child(depth=0, max_depth=0)
+                child.generate_direct_child_power(depth=0, max_depth=0)
 
     def get_actual(self):
         return self._actual
@@ -52,24 +50,18 @@ class Tree:
         self._actual = child
 
     def go_to_adverse_move(self, character_moved: character.Character):
-        print("Moving to adverse move")
-        print(character.characters_string[character_moved.color.value] + str(character_moved.position))
         for child in self._actual.child:
-            print ("in")
             if child.characters[character_moved.color.value].position == character_moved.position:
                 self._actual = child
-                child.dump()
                 break
 
     def go_to_best_child(self, allowed_colors):
-        print("Getting the best child")
         best_child: node.Node = None
         for child in self._actual.child:
             if child.playedCharacter in allowed_colors:
                 if best_child is None or child.heuristic > best_child.heuristic:
                     best_child = child
         self._actual = best_child
-        print("choosed pos : " + str(allowed_colors.index(self._actual.playedCharacter)))
         return allowed_colors.index(self._actual.playedCharacter)
 
     def get_generated_depth(self):
@@ -88,11 +80,9 @@ class Tree:
             self.print(child)
 
     def update_suspect_world(self, characters):
-        print("updating")
         self.update_node(self._actual, characters, self._actual.lock, self._actual.lightOff)
 
     def update_world_info(self, lock, light):
-        print("updating wi")
         self.update_node(self._actual, self._actual.characters, lock, light)
 
     def update_node(self, target_node: node.Node, characters, lock, light):

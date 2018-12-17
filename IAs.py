@@ -4,6 +4,7 @@ import info_parser
 from tree import Tree
 import character
 
+
 class noPowerIA:
     def __init__(self, jid):
         self.old_question = None
@@ -51,15 +52,13 @@ class noPowerIA:
         return self.tree
 
     def answer_question(self, question):
-        print(question)
         q = self.world.parse_question(question)
         available = []
         response= ''
         if q.type is Question.Type.tuile_dispo:
             for arg in q.args:
-               available.append(character.Character.convert_from_tile_color(arg))
+                available.append(character.Character.convert_from_tile_color(arg))
             response = str(self.tree.go_to_best_child(available))
-            self.tree.get_actual().dump()
         elif q.type is Question.Type.position_dispo:
             for arg in q.args:
                 available.append(int(arg))
@@ -68,7 +67,6 @@ class noPowerIA:
             response = str(randrange(6))
         # Add in front the old question type
         self.question_history = [q.type] + self.question_history
-        print("RESPONSE IS : " + response)
         path = './{jid}/reponses.txt'.format(jid=self.jid)
         rf = open(path, 'w+')
         rf.write(response)

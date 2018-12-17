@@ -138,7 +138,7 @@ class ParseInfo():
             self._is_ghost_turn = True
         if self._state is State.inspector_turn:
             self._is_ghost_turn = False
-        print("Line parsed " + self._line + " - Got state : " + str(self._state))
+#        print("Line parsed " + self._line + " - Got state : " + str(self._state))
 
     def init_characters(self):
         if self._line == None:

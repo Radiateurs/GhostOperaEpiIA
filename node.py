@@ -192,8 +192,7 @@ class Node:
         tmp = Node()
         tmp.parent = self
         for i in range(len(self.characters)):
-            tmp.characters[i] = character.Character(self.characters[i].color, self.characters[i].position)
-            tmp.characters[i].suspect = self.characters[i].suspect
+            tmp.characters[i] = character.Character(self.characters[i].color, self.characters[i].position, self.characters[i].suspect)
         tmp.playedCharacter = character.Color.NONE
         tmp.lightOff = self.lightOff
         tmp.lock = self.lock
