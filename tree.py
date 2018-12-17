@@ -7,7 +7,7 @@ class Tree:
     def __init__(self):
         self.root = node.Node()
         self._actual = self.root
-        self._board = board.Board()
+        self.root.playLevel = node.PlayLevelId.ghost1
 
 # Useless unless you stock everything before.
 # Must be used after parsing the info.txt file.
@@ -16,14 +16,33 @@ class Tree:
         self.root.set_character(characters)
         self.root.set_lock(lock)
         self.root.set_light_off(light)
-        self.root.playLevel = node.PlayLevelId.ghost1
+        self.root.playLevel = node.PlayLevelId.ghost
 
     def parent(self):
         if self._actual is not self.root:
             self._actual = self._actual.parent
 
     def generate(self):
+        print("generating")
         self._actual.generate_direct_child(depth=0, max_depth=3)
+        print("done generating")
+
+# generate child other childs
+    def generate_deeper(self, deeper_node: node.Node = None):
+        if deeper_node is None:
+            for child in self._actual.child:
+                self.generate_deeper(child)
+        if deeper_node is not None and len(deeper_node.child) > 0:
+            for child in deeper_node.child:
+                self.generate_deeper(child)
+        if deeper_node is not None and (deeper_node.child is None or len(deeper_node.child) == 0):
+            deeper_node.generate_direct_child(depth=0, max_depth=1)
+
+    def get_actual(self):
+        return self._actual
+
+    def get_actual_pos(self):
+        return self._actual.characters[self._actual.playedCharacter.value].position
 
     def get_childs(self):
         return self._actual.child
@@ -35,13 +54,51 @@ class Tree:
         self._actual = child
 
     def go_to_adverse_move(self, character_moved: character.Character):
+        print("Moving to adverse move")
         for child in self._actual.child:
             if child.characters[character_moved.color.value].position == character_moved.position:
                 self._actual = child
+                child.dump()
                 break
 
-    def go_to_best_child(self):
+    def go_to_best_child(self, allowed_colors):
+        print("Getting the best child")
         best_child: node.Node = None
         for child in self._actual.child:
-            if best_child is None or child.heuristic > best_child.heuristic:
+            if child.playedCharacter in allowed_colors and (best_child is None or child.heuristic > best_child.heuristic):
                 best_child = child
+        self._actual = best_child
+        print("choosed pos : " + str(allowed_colors.index(self._actual.playedCharacter)))
+        return allowed_colors.index(self._actual.playedCharacter)
+
+    def get_generated_depth(self):
+        tmp = self._actual
+        depth = 0
+        while len(tmp.child) > 0:
+            depth += 1
+            tmp = tmp.child[0]
+        return depth
+
+    def print(self, layer: node.Node = None):
+        if layer is None:
+            layer = self._actual
+        layer.dump()
+        for child in layer.child:
+            self.print(child)
+
+    def update_suspect_world(self, characters):
+        print("updating")
+        self.update_node(self._actual, characters)
+
+    def update_node(self, target_node: node.Node, characters):
+        if target_node is None:
+            return
+        for char in characters:
+            target_node.characters[char.color.value].suspect = char.suspect
+            if target_node.ghostColor is not character.Color.NONE:
+                target_node.heuristic = target_node.computeScoreGhost(target_node.ghostColor)
+            else:
+                target_node.heuristic = target_node.computeScoreInspector()
+            target_node.heuristic = target_node.computeScoreInspector()
+        for child in target_node.child:
+            self.update_node(child, characters)

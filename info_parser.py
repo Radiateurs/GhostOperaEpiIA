@@ -1,24 +1,26 @@
 import re
 import character
 from enum import Enum
-from tree import Tree
-import node
+
 
 class State(Enum):
     unknown = 0             # Unknown line
     stars = 1               # *****************
     world_info = 2          # Tour: 1, Score: 4/22
     character_pos = 3       # bleu-3-suspect rouge-6-clean [...]
-    question = 4            # QUESTION : [...]
-    answer_given = 5        # REPONSE DONNEE : [...]
-    answer_understood = 6   # REPONSE INTERPRETEE : [...]
-    character_played = 7    # [le fantome / l'inspecteur] a joue [bleu/rouge/etc...]
-    power_played = 8        # Pouvoir de [couleur] active
-    ghost_state = 9         # pas de cri / le fantome a frappe
-    new_placement = 10      # NOUVEAU PLACEMENT : couleur-pos-suspect/clean
-    inspector_turn = 11     # Le tour de l'inspecteur
-    ghost_turn = 12         # Le tour de le fantome
-    ghost_character = 13    # !!! le fantôme est : [couleur]
+    question_power = 4      # QUESTION : Voulez-vous activer le pouvoir (0/1) ?
+    question = 5            # QUESTION : [...]
+    answer_given = 6        # REPONSE DONNEE : [...]
+    answer_understood = 7   # REPONSE INTERPRETEE : [...]
+    character_played = 8    # [le fantome / l'inspecteur] a joue [bleu/rouge/etc...]
+    power_played = 9        # Pouvoir de [couleur] active
+    ghost_state = 10        # pas de cri / le fantome a frappe
+    new_placement = 11      # NOUVEAU PLACEMENT : couleur-pos-suspect/clean
+    inspector_turn = 12     # Le tour de l'inspecteur
+    ghost_turn = 13         # Le tour de le fantome
+    ghost_character = 14    # !!! le fantôme est : [couleur]
+    small_stars = 15        # ****
+
 
 # Class to parse the ./{jid}/info.txt file
 # HOW TO USE IT :
@@ -53,61 +55,35 @@ class ParseInfo():
     _light = None
     _lock = []
     _ghostColor = character.Color.NONE
-    _last_played_character = None
+    _file = None
+    _init = False
+    _last_played = None
+    _is_ghost_turn = False
 
     def __init__(self, jid: int):
         self._jid = jid
         self._lock = [None, None]
-        self._characters = [character.Character(character.Color.RED, 0),
-                           character.Character(character.Color.PINK, 0),
-                           character.Character(character.Color.GREY, 0),
-                           character.Character(character.Color.BLUE, 0),
-                           character.Character(character.Color.PURPLE, 0),
-                           character.Character(character.Color.BROWN, 0),
-                           character.Character(character.Color.BLACK, 0),
-                           character.Character(character.Color.WHITE, 0)]
-
-    def computeLine(self, tree):
+        self._characters = [character.Character(character.Color.RED, 0, True),
+                           character.Character(character.Color.PINK, 0, True),
+                           character.Character(character.Color.GREY, 0, True),
+                           character.Character(character.Color.BLUE, 0, True),
+                           character.Character(character.Color.PURPLE, 0, True),
+                           character.Character(character.Color.BROWN, 0, True),
+                           character.Character(character.Color.BLACK, 0, True),
+                           character.Character(character.Color.WHITE, 0, True)]
         self.read_file()
-        if tree == None:
-            tree = Tree()
-        while self.has_next_line():
-            #        print("State : ")
-            #       print(parser.get_line_state())
-            if self.get_line_state() is State.world_info:
-                tree.root.lightOff = self.get_light()
-                tree.root.lock = self.get_lock()
-            #            tree.root.dump()
-            if self.get_line_state() is State.character_pos:
-                tree.root.characters = self.get_characters()
-            #            tree.root.dump()
-            self.read_next()
-        #    print("State : ")
-        #    print(parser.get_line_state())
-        if self.get_line_state() is State.world_info:
-            tree.root.lightOff = self.get_light()
-            tree.root.lock = self.get_lock()
-        #        tree.root.dump()
-        if self.get_line_state() is State.character_pos:
-            tree.root.characters = self.get_characters()
-        #        tree.root.dump()
-        if self.get_line_state() is State.ghost_character:
-            tree.root.ghostColor = self.get_ghost_color()
-        if self.get_line_state() is State.new_placement and \
-                node.PlayLevel.isAdverseMove(self._jid, tree.get_turn()):
-            tree.go_to_adverse_move(self.get_last_played_character())
-        return tree
 
     def read_file(self):
         path = './{jid}/{file}'.format(jid=self._jid, file=self.file_info)
-        with open(path, 'r') as f:
-            self._stack = f.read()
-            if self._stack is not None:
-                if (self._stack.splitlines() is not None) and (len(self._stack.splitlines()) > 0):
-                    self._line = self._stack.splitlines()[0]
-                else:
-                    self._line = self._stack
-                self.init_state()
+        if self._file is None:
+            self._file = open(path, 'r')
+        self._stack = self._file.read()
+        if self._stack is not None:
+            if (self._stack.splitlines() is not None) and (len(self._stack.splitlines()) > 0):
+                self._line = self._stack.splitlines()[0]
+            else:
+                self._line = self._stack
+            self.init_state()
 
     def get_line(self):
         return self._line
@@ -135,13 +111,15 @@ class ParseInfo():
 
     def init_state(self):
         self._state = State.unknown
-        if self._line == None:
+        if self._line == None or self._line == "":
             return
-        tokens = [r'[*]+', r'Tour:.', r'^([a-z]+-[0-9]-(suspect|clean)(  |)){8}',
+        tokens = [r'[*]{26}', r'Tour:.', r'^([a-z]+-[0-9]-(suspect|clean)(  |)){8}',
+                  '^QUESTION : Voulez-vous activer le pouvoir (0/1) ?$',
                   r'QUESTION :.', r'REPONSE DONNEE.', r'REPONSE INTERPRETEE.',
                   r'l(e fantome|\'inspecteur) joue', r'Pouvoir de [a-z]+ activé',
                   r'(le fantome frappe|pas de cri)', r'NOUVEAU PLACEMENT : [a-z]+-[0-9]-(suspect|clean)',
-                  r'^  Tour de l\'inspecteur', r'  Tour de le fantome', r'[!]{3}.', r'!!! Le fantôme est : *']
+                  r'^  Tour de l\'inspecteur', r'  Tour de le fantome', r'[!]{3}.',
+                  r'[*]{4}']
         for token in range(len(tokens)):
             if re.search(tokens[token], self._line):
                 self._state = State(token + 1)
@@ -152,10 +130,15 @@ class ParseInfo():
             self.init_world_info()
         if self._state is State.ghost_character:
             self.parseGhostColor()
+        if self._state is State.small_stars:
+            self._init = True
         if self._state is State.new_placement:
             self.parseNewPosition()
-        print("LINE : " + self._line + "$$$")
-        print("STATE : " + str(self._state) + "$$$")
+        if self._state is State.ghost_turn:
+            self._is_ghost_turn = True
+        if self._state is State.inspector_turn:
+            self._is_ghost_turn = False
+        print("Line parsed " + self._line + " - Got state : " + str(self._state))
 
     def init_characters(self):
         if self._line == None:
@@ -177,7 +160,7 @@ class ParseInfo():
     def parseNewPosition(self):
         if ":" not in self._line:
             return
-        char_place = self._line[(self._line.find(':') + 1):]
+        char_place = self._line[(self._line.find(':') + 2):]
         raw_states = char_place.split("-")
         # Get the index by looking in the characters_string list.
         char_index = character.characters_string.index(raw_states[0])
@@ -215,5 +198,11 @@ class ParseInfo():
     def get_ghost_color(self):
         return self._ghostColor
 
+    def is_init(self):
+        return self._init
+
     def get_last_played_character(self):
         return self._last_played_character
+
+    def is_ghost_turn(self):
+        return self._is_ghost_turn

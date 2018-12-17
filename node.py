@@ -60,14 +60,14 @@ class Node:
         self.playedCharacter = None
         self.parent = None
         self.child = []
-        self.characters = [character.Character(character.Color.RED, 0),
-                           character.Character(character.Color.PINK, 0),
-                           character.Character(character.Color.GREY, 0),
-                           character.Character(character.Color.BLUE, 0),
-                           character.Character(character.Color.PURPLE, 0),
-                           character.Character(character.Color.BROWN, 0),
-                           character.Character(character.Color.BLACK, 0),
-                           character.Character(character.Color.WHITE, 0)]
+        self.characters = [character.Character(character.Color.RED, 0, True),
+                           character.Character(character.Color.PINK, 0, True),
+                           character.Character(character.Color.GREY, 0, True),
+                           character.Character(character.Color.BLUE, 0, True),
+                           character.Character(character.Color.PURPLE, 0, True),
+                           character.Character(character.Color.BROWN, 0, True),
+                           character.Character(character.Color.BLACK, 0, True),
+                           character.Character(character.Color.WHITE, 0, True)]
         self.lock = [0, 1]
         self.lightOff = 0
         self.board = board.Board()
@@ -166,9 +166,8 @@ class Node:
                 tmp = Node()
                 tmp.parent = self
                 for i in range(len(self.characters)):
-                    tmp.characters[i] = character.Character(self.characters[i].color, self.characters[i].position)
-                    tmp.characters[i].suspect = self.characters[i].suspect
-                tmp.playedCharacter = char.value
+                    tmp.characters[i] = character.Character(self.characters[i].color, self.characters[i].position, self.characters[i].suspect)
+                tmp.playedCharacter = char
                 tmp.lightOff = self.lightOff
                 tmp.lock = self.lock
                 tmp.setPosition(char, room)
@@ -178,12 +177,13 @@ class Node:
                     tmp.heuristic = tmp.computeScoreGhost(tmp.ghostColor)
                 else:
                     tmp.heuristic = tmp.computeScoreInspector()
-#                print("Generating character " + character.characters_string[char.value] + " for room " + str(room) +
-#                      " with a depth of " + str(depth) + " for turn " + str(self.playLevel) + " with heuristic of "
-#                      + str(tmp.heuristic))
+                print("Generating character " + character.characters_string[char.value] + " for room " + str(room) +
+                      " with a depth of " + str(depth) + " for turn " + str(self.playLevel) + " with heuristic of "
+                      + str(tmp.heuristic))
                 if depth < max_depth:
                     tmp.generate_direct_child(depth=depth+1)
                 self.child.append(tmp)
+                self.child.sort(key=lambda n: n.heuristic)
 
     def create_child_node(self):
         tmp = Node()
@@ -191,7 +191,7 @@ class Node:
         for i in range(len(self.characters)):
             tmp.characters[i] = character.Character(self.characters[i].color, self.characters[i].position)
             tmp.characters[i].suspect = self.characters[i].suspect
-        tmp.playedCharacter = char.value
+        tmp.playedCharacter = character.Color.NONE
         tmp.lightOff = self.lightOff
         tmp.lock = self.lock
         tmp.playLevel = PlayLevel.getNextMove(self.playLevel)
@@ -217,6 +217,7 @@ class Node:
                 if char == character.Color.BLUE:
                     for lock_room in range(0, 10):
                         tmp = self.create_child_node()
+                        tmp.playedCharacter = char
                         tmp.setPosition(char, room)
                         tmp.lock = lock_room
                         tmp = self.set_tmp_node_heuristique(tmp)
@@ -226,6 +227,7 @@ class Node:
                 elif char == character.Color.GREY:
                     for light_room in range(0, 10):
                         tmp = self.create_child_node()
+                        tmp.playedCharacter = char
                         tmp.setPosition(char, room)
                         tmp.lightOff = light_room
                         tmp = self.set_tmp_node_heuristique(tmp)
@@ -245,6 +247,7 @@ class Node:
                         if char == character.Color.PURPLE:
                             continue
                         tmp_power = self.create_child_node()
+                        tmp_power.playedCharacter = char
                         old_purple_position = self.characters[char.value].position
                         tmp.setPosition(char, self.characters[swap_char.value].position)
                         tmp.setPosition(swap_char, old_purple_position)
@@ -255,6 +258,7 @@ class Node:
                 elif char == character.Color.BROWN:
                     # choose not use the power
                     tmp = self.create_child_node()
+                    tmp.playedCharacter = char
                     tmp.setPosition(char, room)
                     tmp = self.set_tmp_node_heuristique(tmp)
                     if depth < max_depth:
@@ -265,6 +269,7 @@ class Node:
                         if char == character.Color.BROWN or self.characters[swap_char.value].position != self.characters[char.value].position:
                             continue
                         tmp_power = self.create_child_node()
+                        tmp.playedCharacter = char
                         tmp.setPosition(char, room)
                         tmp.setPosition(swap_char, room)
                         tmp_power = self.set_tmp_node_heuristique(tmp_power)
@@ -273,6 +278,7 @@ class Node:
                         self.child.append(tmp_power)
                 else: # if the power is not handled (or handled elsewhere like for example the pink)
                     tmp = self.create_child_node()
+                    tmp.playedCharacter = char
                     tmp.setPosition(char, room)
                     tmp = self.set_tmp_node_heuristique(tmp)
                     if depth < max_depth:
