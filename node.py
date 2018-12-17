@@ -55,6 +55,7 @@ class PlayLevel:
 class Node:
 
     def __init__(self):
+        self.depth = 0
         self.playLevel = None
         self.ghostColor = character.Color.NONE
         self.playedCharacter = None
@@ -161,10 +162,12 @@ class Node:
         for char in character.Color:
             if char == character.Color.NONE:
                 continue
+            self.board.lockPath(self.lock[0], self.lock[1])
             rooms = self.board.getLinkForRoom(self.characters[char.value].position)
             for room in rooms:
                 tmp = Node()
                 tmp.parent = self
+                tmp.depth = self.depth + 1
                 for i in range(len(self.characters)):
                     tmp.characters[i] = character.Character(self.characters[i].color, self.characters[i].position, self.characters[i].suspect)
                 tmp.playedCharacter = char
@@ -177,9 +180,9 @@ class Node:
                     tmp.heuristic = tmp.computeScoreGhost(tmp.ghostColor)
                 else:
                     tmp.heuristic = tmp.computeScoreInspector()
-                print("Generating character " + character.characters_string[char.value] + " for room " + str(room) +
-                      " with a depth of " + str(depth) + " for turn " + str(self.playLevel) + " with heuristic of "
-                      + str(tmp.heuristic))
+                #print("Generating character " + character.characters_string[char.value] + " for room " + str(room) +
+                #     " with a depth of " + str(depth) + "(real :)" + str(tmp.depth) + " for turn " + str(self.playLevel) + " with heuristic of "
+                #      + str(tmp.heuristic))
                 if depth < max_depth:
                     tmp.generate_direct_child(depth=depth+1)
                 self.child.append(tmp)

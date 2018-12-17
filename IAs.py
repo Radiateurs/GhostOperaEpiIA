@@ -28,6 +28,8 @@ class noPowerIA:
 
     def handle_info_state(self):
         if self.parser.get_line_state() is info_parser.State.world_info:
+            if self.parser.is_init() is True:
+                self.tree.update_world_info(self.parser.get_light(), self.parser.get_lock())
             self.tree.root.lightOff = self.parser.get_light()
             self.tree.root.lock = self.parser.get_lock()
         if self.parser.get_line_state() is info_parser.State.character_pos:
@@ -67,6 +69,8 @@ class noPowerIA:
         # Add in front the old question type
         self.question_history = [q.type] + self.question_history
         print("RESPONSE IS : " + response)
-        rf = open('./1/reponses.txt', 'w+')
+        path = './{jid}/reponses.txt'.format(jid=self.jid)
+        rf = open(path, 'w+')
         rf.write(response)
         rf.close()
+        self.tree.generate_deeper()

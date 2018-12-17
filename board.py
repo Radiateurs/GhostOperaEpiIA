@@ -31,10 +31,13 @@ class Board:
     lock = None
 
     def getLinkForRoom(self, room, pink=False):
-        if self.lock is None or self.lock[0] is not room:
+        if self.lock is None or (self.lock[0] is not room or self.lock[1] is not room):
             return path[room] if pink is False else self.path_pink[room]
         tmp = path if pink is False else path_pink
-        tmp[self.lock[0]].remove(self.lock[1])
+        if self.lock[0] is room:
+            tmp[self.lock[0]].remove(self.lock[1])
+        if self.lock[1] is room:
+            tmp[self.lock[1]].remove(self.lock[0])
         return tmp[room]
 
     def lockPath(self, origin, next_room):

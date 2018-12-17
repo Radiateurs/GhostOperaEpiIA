@@ -1,10 +1,4 @@
-from random import randrange
-
-import info_parser
-import node
-from helper import World, Question
-from tree import Tree
-import character
+from helper import World
 import IAs
 
 # ghost
